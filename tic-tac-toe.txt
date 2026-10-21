@@ -23,3 +23,10 @@
     - use arrow functions to be able to pass values
 - conventional to use onSomething names for props which represent events
 - handleSomething for the function definitions which handle thos events
+- immutability makes complex features easier to implement
+    - by default all child components re-render automatically when part of the parent component changes
+    - cheap for components to compare whether their data has changed or not
+- when using <li></li> alsy good to use a key to help differentiate each list item from its siblings
+    - helps identify each component and allows React to maintain state between re-renders
+    - key change -> component destroyed and re-created with new state
+    - error reported if no key and array index is used which can be problematic when re-ordering list or inserting/removing items
