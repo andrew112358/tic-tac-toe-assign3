@@ -1,0 +1,25 @@
+- component = piece of reusable code that represents a part of a user interface
+    - used to render, manage, and update UI elements
+- export makes function accessible outside of file
+    - default tells other files its the main function in the file
+    - can only have one default
+- <button> is a JSX element; combo of JS and HTML
+- className is a prop that tells CSS how to style things
+- * and body define the style of large parts of your app in CSS
+- .square defines components of className square
+- NEED to return only one JSX element per function so use <> and </> if not one
+- when passing arguments to functions need ({ <parameters> })
+    - when using them need {<paramter_name>}
+- should always make a component to handle clicks
+    - set the onClick prop to a reference to this component
+- components use useState to remember things
+- import { useState } from 'react';
+- make sure useState() takes in the inital value 
+- possible to inspect specific components with inspect tab
+- to collect data from multiple children or have them communicate with each other, declare the shared state in their parent component
+- slice() lets you make a copy of an array
+- JS supports closures such that an inner function has access to variables and functions defined in an outer function
+- can only pass functions as reference
+    - use arrow functions to be able to pass values
+- conventional to use onSomething names for props which represent events
+- handleSomething for the function definitions which handle thos events
