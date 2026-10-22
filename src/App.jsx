@@ -13,17 +13,54 @@ function Square({ value, onSquareClick }) {
 }
 
 function Board({ xIsNext, squares, onPlay }) {
+  const [selectedSquare, setSelectedSquare] = useState(null);
+  const currentPlayer = xIsNext ? 'X' : 'O';
+  const playerPieceCount = squares.filter(s => s === currentPlayer).length;
+  const needsSlide = playerPieceCount >= 3;
+
   function handleClick(i) {
-    if (calculateWinner(squares) || squares[i]) {
+
+    if (calculateWinner(squares)) {
       return;
     }
-    const nextSquares = squares.slice();
-    if (xIsNext) {
-      nextSquares[i] = 'X';
+
+    if (!needsSlide) {
+      if (squares[i]) {
+        return;
+      }
+      const nextSquares = squares.slice();
+      nextSquares[i] = currentPlayer;
+      onPlay(nextSquares);
+      return;
     } else {
-      nextSquares[i] = 'O';
+      if (squares[i] === currentPlayer) {
+        setSelectedSquare(i);
+        return;
+      }
+      if (selectedSquare !== null && squares[i] === null) {
+        if (!isAdjacent(selectedSquare, i)) {
+          return;
+        }
+
+        const nextSquares = squares.slice();
+        nextSquares[i] = currentPlayer;
+        nextSquares[selectedSquare] = null;
+
+        const centerIndex = 4;
+        if (squares[centerIndex] === currentPlayer) {
+          const isWinningMove = calculateWinner(nextSquares) !== null;
+          const vacatingCenter = nextSquares[centerIndex] !== currentPlayer;
+
+          if (!isWinningMove && !vacatingCenter) {
+            return;
+          }
+        }
+        setSelectedSquare(null);
+        onPlay(nextSquares);
+        return;
+      }
     }
-    onPlay(nextSquares);
+
   }
 
   const winner = calculateWinner(squares);
@@ -31,7 +68,7 @@ function Board({ xIsNext, squares, onPlay }) {
   if (winner) {
     status = 'Winner: ' + winner;
   } else {
-    status = 'Next player: ' + (xIsNext ? 'X' : 'O');
+    status = `Next player: ${currentPlayer} ${needsSlide ? '(Select a piece to slide)' : '(Place piece)'}`;
   }
 
   return (
@@ -96,6 +133,18 @@ export default function Game() {
       </div>
     </div>
   );
+}
+
+function isAdjacent(a, b) {
+  const rowA = Math.floor(a / 3);
+  const colA = a % 3;
+  const rowB = Math.floor(b / 3);
+  const colB = b % 3;
+
+  const rowDiff = Math.abs(rowA - rowB);
+  const colDiff = Math.abs(colA - colB);
+
+  return (rowDiff <= 1) && (colDiff <= 1) && (rowDiff > 0 || colDiff > 0);
 }
 
 function calculateWinner(squares) {
