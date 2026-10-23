@@ -1,0 +1,52 @@
+After your first three moves, instead of adding further pieces you must instead move one of your existing pieces to an adjacent empty square. Therefore, after your third move you always occupy three squares. The move can be up, down, left, right, or diagonal.
+
+If it is your turn to move and you have three pieces on the board and one of your pieces is in the center square, your move must either win or vacate the center square.
+
+need to keep track of how many X's and O's on the board
+- used a local variable to check during each turn how many of a certain piece is on the board
+- filtered the squares array for either X or O and used length to determine if a piece needs to slide/move to an adjacent piece
+const currentPlayer = xIsNext ? 'X' : 'O';
+const playerPieceCount = squares.filter(s => s === currentPlayer).length;
+const needsSlide = playerPieceCount >= 3;
+
+need some way of determining if squares are adjacent
+- created an isAdjacent function
+- takes in two arguments, one for selected square and one for square where the next piece should good
+- use floor division to get row and mod to get col
+- check the absolute value of the differences and return if they are adjacent
+function isAdjacent(a, b) {
+  const rowA = Math.floor(a / 3);
+  const colA = a % 3;
+  const rowB = Math.floor(b / 3);
+  const colB = b % 3;
+
+  const rowDiff = Math.abs(rowA - rowB);
+  const colDiff = Math.abs(colA - colB);
+
+  return (rowDiff <= 1) && (colDiff <= 1) && (rowDiff > 0 || colDiff > 0);
+}
+
+need to select a square and determine if it is moveable
+- create a new state variable to track the selected square in the Board component
+- also check if selected square is one of the current player's pieces
+const [selectedSquare, setSelectedSquare] = useState(null);
+
+if (squares[i] === currentPlayer) {
+    setSelectedSquare(i);
+    return;
+}
+
+need to handle special case when a player has the center square but has to slide
+- check if the user has a piece in the center
+- add the theoretical next move to the selected square and check if it is a winning move
+- check if the next selected move vacates the center
+- move the piece if either condition true otherwise dont move
+const centerIndex = 4;
+if (squares[centerIndex] === currentPlayer) {
+    const isWinningMove = calculateWinner(nextSquares) !== null;
+    const vacatingCenter = nextSquares[centerIndex] !== currentPlayer;
+
+    if (!isWinningMove && !vacatingCenter) {
+    return;
+    }
+}

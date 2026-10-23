@@ -1,3 +1,289 @@
+created the initial square component
+export default function Square() {
+  return <button className="square">X</button>;
+}
+initially forgot to close the button with a / and created an error on the page
+
+create 9 squares for the 9 on a tic-tac-toe board
+at first didn't put everything into a single group of divs which created an error since components can only return one JSX element
+export default function Board() {
+  return (
+    <>
+      <div className="board-row">
+        <button className="square">1</button>
+        <button className="square">2</button>
+        <button className="square">3</button>
+      </div>
+      <div className="board-row">
+        <button className="square">4</button>
+        <button className="square">5</button>
+        <button className="square">6</button>
+      </div>
+      <div className="board-row">
+        <button className="square">7</button>
+        <button className="square">8</button>
+        <button className="square">9</button>
+      </div>
+    </>
+  );
+}
+
+allowed props to be passed into the square component so they could have a value for their number box
+initially didn't put braces when calling the variable in the square function and printed "value" instead of the argument value
+function Square({ value }) {
+  return <button className="square">{value}</button>;
+}
+
+passed in a prop to each of the squares in the Board component
+export default function Board() {
+  return (
+    <>
+      <div className="board-row">
+        <Square value="1" />
+        <Square value="2" />
+        <Square value="3" />
+      </div>
+      <div className="board-row">
+        <Square value="4" />
+        <Square value="5" />
+        <Square value="6" />
+      </div>
+      <div className="board-row">
+        <Square value="7" />
+        <Square value="8" />
+        <Square value="9" />
+      </div>
+    </>
+  );
+}
+
+to make the buttons interactive needed a handleClick() function inside of the square Square
+  function handleClick() {
+    console.log('clicked!');
+  }
+
+now with the ability to handle a click, created a state with useState to keep track of the value inside of Square
+  const [value, setValue] = useState(null);
+
+  function handleClick() {
+    setValue('X');
+  }
+now when clicking a square an X will fill it
+initially forgot to set the default value for value to null but just got a warning not error
+
+lifted up state the a squares array in the Board component so that they update in value when clicked 
+export default function Board() {
+  const [squares, setSquares] = useState(Array(9).fill(null));
+  return (
+    <>
+      <div className="board-row">
+        <Square value={squares[0]} />
+        <Square value={squares[1]} />
+        <Square value={squares[2]} />
+      </div>
+      <div className="board-row">
+        <Square value={squares[3]} />
+        <Square value={squares[4]} />
+        <Square value={squares[5]} />
+      </div>
+      <div className="board-row">
+        <Square value={squares[6]} />
+        <Square value={squares[7]} />
+        <Square value={squares[8]} />
+      </div>
+    </>
+  );
+}
+also created an onSquareClick function to pass in as reference to the Square components so that when the square is clicked it will update on the Board
+function Square({ value, onSquareClick }) {
+  return (
+    <button className="square" onClick={onSquareClick}>
+      {value}
+    </button>
+  );
+}
+
+ <Square value={squares[0]} onSquareClick={handleClick} />
+
+function handleClick() {
+    const nextSquares = squares.slice();
+    nextSquares[0] = "X";
+    setSquares(nextSquares);
+}
+need to slice for immutability since sometimes JS will not recognzize that the DOM was updated and states will not be updated
+
+need to pass in a call back function in order to reference the handleClick function properly and it knows which square should be updated and altered
+export default function Board() {
+  // ...
+  return (
+    <>
+      <div className="board-row">
+        <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
+        <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
+        <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
+      </div>
+      <div className="board-row">
+        <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
+        <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
+        <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
+      </div>
+      <div className="board-row">
+        <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
+        <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
+        <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
+      </div>
+    </>
+  );
+};
+
+to take turns, create a new state to keep track of if xIsNext and if not then it is O's turn
+  const [xIsNext, setXIsNext] = useState(true);
+function handleClick(i) {
+    const nextSquares = squares.slice();
+    if (xIsNext) {
+      nextSquares[i] = "X";
+    } else {
+      nextSquares[i] = "O";
+    }
+    setSquares(nextSquares);
+    setXIsNext(!xIsNext);
+  }
+at first accidentally put the state inside of the handleClick function and caused some errors such that the squares were not updating properly
+states should always be declared at the top of components so they can be properly passed down
+
+added condition to the handleClick function so that you can't update the state of a square that already has a piece inside of it
+  if (squares[i]) {
+    return;
+  }
+
+declaring a winner created a new function outside of Board with arrays of all the possible win conditions
+loops through all of the sqaure combinations to see if any match one of the winning lines
+function calculateWinner(squares) {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return squares[a];
+    }
+  }
+  return null;
+}
+then put the function inside of the handleclick to stop play
+  if (squares[i] || calculateWinner(squares)) {
+    return;
+  }
+and check in the Board
+  const winner = calculateWinner(squares);
+  let status;
+  if (winner) {
+    status = "Winner: " + winner;
+  } else {
+    status = "Next player: " + (xIsNext ? "X" : "O");
+  }
+
+in order to keep game history to click back to the history tabs, lift state up again to a Game component
+export default function Game() {
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board />
+      </div>
+      <div className="game-info">
+        <ol>{/*TODO*/}</ol>
+      </div>
+    </div>
+  );
+}
+
+move the states from the Board component to the Game component and change name to the history
+  const [xIsNext, setXIsNext] = useState(true);
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  const currentSquares = history[history.length - 1];
+
+also have to make a new function to handlePlay and add some props to Board since it is not the main component anymore and needs a way to recieve and send updates
+
+function Board({ xIsNext, squares, onPlay }) 
+<Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+
+update the handlePlay function so that it actually handles the play and adds to the history
+function handlePlay(nextSquares) {
+    setHistory([...history, nextSquares]);
+    setXIsNext(!xIsNext);
+  }
+
+can jump back to history of moves using a new function and map to get the specific history we want
+  function jumpTo(nextMove) {
+    // TODO
+  }
+
+  const moves = history.map((squares, move) => {
+    let description;
+    if (move > 0) {
+      description = 'Go to move #' + move;
+    } else {
+      description = 'Go to game start';
+    }
+    return (
+      <li>
+        <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
+    );
+  });
+
+also added new div to show the game info and buttons to jump back to previous moves
+      <div className="game-info">
+        <ol>{moves}</ol>
+      </div>
+
+added key to the list JSX so that React can regonize that it has been updated and needs a re-render
+<li key={user.id}>
+  {user.name}: {user.taskCount} tasks left
+</li>
+
+finally create new state for the current move and using it to jump back to other moves
+  const [currentMove, setCurrentMove] = useState(0);
+  function jumpTo(nextMove) {
+    setCurrentMove(nextMove);
+    setXIsNext(nextMove % 2 === 0);
+  }
+
+function handlePlay(nextSquares) {
+  const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+  setHistory(nextHistory);
+  setCurrentMove(nextHistory.length - 1);
+  setXIsNext(!xIsNext);
+}
+
+clean up the code and get rid of some variables that are a little repetitive
+export default function Game() {
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  const [currentMove, setCurrentMove] = useState(0);
+  const xIsNext = currentMove % 2 === 0;
+  const currentSquares = history[currentMove];
+
+  function handlePlay(nextSquares) {
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
+  }
+
+  function jumpTo(nextMove) {
+    setCurrentMove(nextMove);
+  }
+  // ...
+}
+
+NOTES from Tutorial
+
 - component = piece of reusable code that represents a part of a user interface
     - used to render, manage, and update UI elements
 - export makes function accessible outside of file
